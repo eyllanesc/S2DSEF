@@ -1,0 +1,17 @@
+On linux terminal:
+
+$ hcitool scan
+	Scanning ...
+	20:15:02:02:03:27	HC-05
+	20:15:02:02:01:06	HC-05
+$ sudo rfcomm connect 0 20:15:02:02:03:27
+	Connected /dev/rfcomm0 to 20:15:02:02:03:27 on channel 1
+	Press CTRL-C for hangup
+
+Another Terminal
+
+$ sudo rfcomm connect 1 20:15:02:02:01:06
+	Connected /dev/rfcomm1 to 20:15:02:02:03:06 on channel 1
+	Press CTRL-C for hangup
+
+
