@@ -31,13 +31,7 @@ void serialEvent() {
       Serial.print(" ");
       Serial.print(ay); 
       Serial.print(" ");
-      Serial.print(az); 
-      Serial.print(" ");
-      Serial.print(gx); 
-      Serial.print(" ");
-      Serial.print(gy); 
-      Serial.print(" ");
-      Serial.println(gz);
+      Serial.println(az); 
       blinkState = !blinkState;
       digitalWrite(LED_PIN, blinkState);
     }

@@ -1,0 +1,106 @@
+#! /usr/bin/python
+
+import os
+from bluetooth import discover_devices
+import sys, serial
+import numpy as np
+from time import sleep
+from collections import deque
+from matplotlib import pyplot as plt
+import time
+
+filename = "accel.txt"
+Ts = 100e-3;
+# class that holds analog data for N samples
+class AnalogData:
+  # constr
+  def __init__(self, maxLen):
+    self.ax = deque([0.0]*maxLen)
+    self.ay = deque([0.0]*maxLen)
+    self.az = deque([0.0]*maxLen)
+    self.maxLen = maxLen
+
+  # ring buffer
+  def addToBuf(self, buf, val):
+    if len(buf) < self.maxLen:
+      buf.append(val)
+    else:
+      buf.pop()
+      buf.appendleft(val)
+
+  # add data
+  def add(self, data):
+    assert(len(data) == 3)
+    self.addToBuf(self.ax, data[0])
+    self.addToBuf(self.ay, data[1])
+    self.addToBuf(self.az, data[2])
+# plot class
+class AnalogPlot:
+  # constr
+  def __init__(self, analogData):
+    # set plot to animated
+    plt.ion() 
+    self.axline, = plt.plot(analogData.ax)
+    self.ayline, = plt.plot(analogData.ay)
+    self.azline, = plt.plot(analogData.az)
+    plt.ylim([-20000, 20000])
+
+  # update plot
+  def update(self, analogData):
+    self.axline.set_ydata(analogData.ax)
+    self.ayline.set_ydata(analogData.ay)
+    self.azline.set_ydata(analogData.az)
+    #print analogData.az[end]
+    plt.draw()
+
+# main() function
+def main(port):
+  strPort = port[0]
+
+  # plot parameters
+  analogData = AnalogData(100)
+  analogPlot = AnalogPlot(analogData)
+
+  print 'plotting data...'
+
+  # open serial port
+  ser = serial.Serial(strPort, 9600)
+  while True:
+    time_start= time.clock();
+    ser.write('0')
+    while (ser.inWaiting()==0): #Wait here until there is data
+        pass #do nothing
+    line = ser.readline()
+    data = [float(val) for val in line.split()]
+    if(len(data) > 2):
+      try:
+        file = open(filename, "a")
+	file.write("%d %d %d\n" % (data[0], data[1], data[2]))
+        analogData.add(data)
+        analogPlot.update(analogData)
+	delta_t = time.clock()-time_start
+	sleep(Ts-(delta_t))
+      except :
+      	pass
+      	#break
+  # close serial
+  ser.flush()
+  ser.close()
+  file.close()
+
+# call main
+if __name__ == '__main__':
+  nearby_devices = discover_devices(lookup_names = True)
+  ports = []
+  print "found %d devices" % len(nearby_devices)
+  for address, name in nearby_devices:
+     print " %s, %s" % (name, address)
+     if address=="20:15:02:02:01:06":
+        os.system("sudo rfcomm connect 0 "+address)
+	ports.append("/dev/rfcomm0")
+     if address=="20:15:02:02:03:27":
+	os.system("sudo rfcomm connect 1 "+address)
+        ports.append("/dev/rfcomm1")
+     sleep(1)
+  if len(nearby_devices):
+  	main(ports)

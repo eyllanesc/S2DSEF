@@ -2,7 +2,7 @@
 Implementation of system for detection of dangerous state in epilepsy fit using acceleration sensors
 
 Using next devices:
-- Arduino (Pro mini and UNO)
+- Arduino (Pro mini, arduino nano and UNO)
 - Bluetooth HC05
 - MPU6050
 
